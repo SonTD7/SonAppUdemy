@@ -29,12 +29,18 @@ exports.getProducts = (req, res, next) => {
 if(!editMode) {
   return res.redirect('/');
 }
-
-  Product.fetchAll(products => {
-    res.render('admin/products', {
-      prods: products,
-      pageTitle: 'Admin Products',
-      path: '/admin/products'
-    });
+const prodId=req.params.productId;
+Product.findById(prodId, product =>{
+  if(!product){
+    return res.redirect('/');
+  }
+  res.render('admin/edit-product', {
+    prods: products,
+    pageTitle: 'Edit Product',
+    path: '/admin/edit-product',
+    editing: editMode,
+    product: product
   });
+});
+  
 };
