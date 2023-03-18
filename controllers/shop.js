@@ -1,84 +1,25 @@
-const Product = require('../models/product');
-const Cart = require('../models/cart');
+const path = require('path');
 
-exports.getProducts = (req, res, next) => {
-  Product.fetchAll(products => {
-    res.render('shop/product-list', {
-      prods: products,
-      pageTitle: 'All Products',
-      path: '/products'
-    });
-  });
-};
+const express = require('express');
 
-exports.getProduct = (req, res, next) => {
-  const prodId = req.params.productId;
-  Product.findById(prodId, product => {
-    res.render('shop/product-detail', {
-      product: product,
-      pageTitle: product.title,
-      path: '/products'
-    });
-  });
-};
+const shopController = require('../controllers/shop');
 
-exports.getIndex = (req, res, next) => {
-  Product.fetchAll(products => {
-    res.render('shop/index', {
-      prods: products,
-      pageTitle: 'Shop',
-      path: '/'
-    });
-  });
-};
+const router = express.Router();
 
-exports.getCart = (req, res, next) => {
-  Cart.getCart(cart => {
-    Product.fetchAll(products => {
-      const cartProducts = [];
-      for (product of products) {
-        const cartProductData = cart.products.find(
-          prod => prod.id === product.id
-        );
-        if (cartProductData) {
-          cartProducts.push({ productData: product, qty: cartProductData.qty });
-        }
-      }
-      res.render('shop/cart', {
-        path: '/cart',
-        pageTitle: 'Your Cart',
-        products: cartProducts
-      });
-    });
-  });
-};
+router.get('/', shopController.getIndex);
 
-exports.postCart = (req, res, next) => {
-  const prodId = req.body.productId;
-  Product.findById(prodId, product => {
-    Cart.addProduct(prodId, product.price);
-  });
-  res.redirect('/cart');
-};
+router.get('/products', shopController.getProducts);
 
-exports.postCartDeleteProduct = (req, res, next) => {
-  const prodId = req.body.productId;
-  Product.findById(prodId, product => {
-    Cart.deleteProduct(prodId, product.price);
-    res.redirect('/cart');
-  });
-};
+router.get('/products/:productId', shopController.getProduct);
 
-exports.getOrders = (req, res, next) => {
-  res.render('shop/orders', {
-    path: '/orders',
-    pageTitle: 'Your Orders'
-  });
-};
+router.get('/cart', shopController.getCart);
 
-exports.getCheckout = (req, res, next) => {
-  res.render('shop/checkout', {
-    path: '/checkout',
-    pageTitle: 'Checkout'
-  });
-};
+router.post('/cart', shopController.postCart);
+
+router.post('/cart-delete-item', shopController.postCartDeleteProduct);
+
+router.post('/create-order', shopController.postOrder);
+
+router.get('/orders', shopController.getOrders);
+
+module.exports = router;
